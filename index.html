@@ -1,0 +1,2094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitesTracker | Advanced Vehicle Price Analytics Dashboard</title>
+  <meta name="description" content="High-performance dark-themed vehicle price tracking dashboard with real-time analytics, market drop detection, and premium data visualizations.">
+  <meta name="author" content="VitesTracker Team">
+  <meta name="theme-color" content="#0B0F19">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ==========================================
+       DESIGN SYSTEM & CSS VARIABLES
+       ========================================== */
+    :root {
+      --bg-main: #0B0F19;
+      --bg-surface: rgba(22, 27, 38, 0.7);
+      --bg-surface-solid: #161B26;
+      --border-color: rgba(255, 255, 255, 0.05);
+      --border-color-glow: rgba(0, 242, 254, 0.3);
+      
+      /* Neon Accents */
+      --color-cyan: #00F2FE;
+      --color-cyan-glow: rgba(0, 242, 254, 0.4);
+      --color-purple: #9B51E0;
+      --color-purple-glow: rgba(155, 81, 224, 0.4);
+      --color-green: #05FFC0;
+      --color-green-glow: rgba(5, 255, 192, 0.4);
+      --color-red: #FF3366;
+      --color-red-glow: rgba(255, 51, 102, 0.4);
+      
+      /* Text Colors */
+      --text-primary: #F3F4F6;
+      --text-secondary: #9CA3AF;
+      --text-muted: #6B7280;
+
+      /* Transitions */
+      --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ==========================================
+       BASE RESET & STYLING
+       ========================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(30, 38, 64, 0.6) 0%, rgba(11, 15, 25, 0.9) 80%),
+        radial-gradient(circle at 10% 40%, rgba(155, 81, 224, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 70%, rgba(0, 242, 254, 0.05) 0%, transparent 40%);
+      background-attachment: fixed;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-main);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1F2937;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-cyan);
+    }
+
+    /* ==========================================
+       CONTAINER LAYOUT
+       ========================================== */
+    .container {
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      flex-grow: 1;
+    }
+
+    /* ==========================================
+       GLASSMORPHISM HELPER
+       ========================================== */
+    .glass-panel {
+      background: var(--bg-surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      transition: var(--transition-smooth);
+    }
+
+    .glass-panel:hover {
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    /* ==========================================
+       HEADER COMPONENT
+       ========================================== */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 2rem;
+      right: 2rem;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color) 20%, var(--border-color) 80%, transparent);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--color-cyan), var(--color-purple));
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      color: var(--bg-main);
+    }
+
+    .brand-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .brand-text span {
+      color: var(--color-cyan);
+      text-shadow: 0 0 10px var(--color-cyan-glow);
+    }
+
+    .telemetry-status {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      background: rgba(5, 255, 192, 0.05);
+      border: 1px solid rgba(5, 255, 192, 0.15);
+      color: var(--color-green);
+      box-shadow: inset 0 0 8px rgba(5, 255, 192, 0.05);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--color-green);
+      box-shadow: 0 0 8px var(--color-green);
+      animation: pulse 1.8s infinite;
+    }
+
+    .btn-scrape {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--bg-main);
+      background: linear-gradient(90deg, var(--color-cyan), var(--color-purple));
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.3);
+      transition: var(--transition-smooth);
+    }
+
+    .btn-scrape:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);
+    }
+
+    .btn-scrape:active {
+      transform: translateY(0);
+    }
+
+    /* Language Toggle Button styling */
+    .btn-lang {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      padding: 0.5rem 0.875rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-lang:hover {
+      border-color: var(--color-cyan);
+      box-shadow: 0 0 12px var(--color-cyan-glow);
+    }
+
+    .btn-lang .lang-text {
+      transition: var(--transition-smooth);
+    }
+
+    .btn-lang .lang-text.active {
+      color: var(--color-cyan);
+      text-shadow: 0 0 8px var(--color-cyan-glow);
+    }
+
+    .btn-lang .lang-divider {
+      color: var(--text-muted);
+      opacity: 0.4;
+      font-weight: 400;
+    }
+
+    /* ==========================================
+       SUMMARY CARDS GRID
+       ========================================== */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .summary-card {
+      padding: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 100% 0%, var(--card-glow, rgba(0, 242, 254, 0.05)), transparent 50%);
+      pointer-events: none;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .summary-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .summary-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--card-accent, var(--color-cyan));
+    }
+
+    .summary-body {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .summary-value {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--text-primary);
+    }
+
+    .summary-footer {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8125rem;
+    }
+
+    .change-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      border-radius: 20px;
+    }
+
+    .change-badge.positive {
+      background: rgba(5, 255, 192, 0.08);
+      border: 1px solid rgba(5, 255, 192, 0.15);
+      color: var(--color-green);
+    }
+
+    .change-badge.negative {
+      background: rgba(255, 51, 102, 0.08);
+      border: 1px solid rgba(255, 51, 102, 0.15);
+      color: var(--color-red);
+    }
+
+    .change-label {
+      color: var(--text-muted);
+    }
+
+    .sparkline-container {
+      margin-top: 0.5rem;
+      height: 40px;
+      width: 100%;
+    }
+
+    /* Card customization instances */
+    .card-avg {
+      --card-accent: var(--color-cyan);
+      --card-glow: rgba(0, 242, 254, 0.08);
+    }
+    .card-total {
+      --card-accent: var(--color-purple);
+      --card-glow: rgba(155, 81, 224, 0.08);
+    }
+    .card-drop {
+      --card-accent: var(--color-green);
+      --card-glow: rgba(5, 255, 192, 0.08);
+    }
+
+    /* ==========================================
+       CHART PANEL & CONTROLS
+       ========================================== */
+    .chart-panel {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .panel-title {
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-title i {
+      color: var(--color-cyan);
+    }
+
+    .chart-filters {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* Pill Selection styles */
+    .pill-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 3px;
+    }
+
+    .pill-item {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .pill-item:hover {
+      color: var(--text-primary);
+    }
+
+    .pill-item.active {
+      color: var(--bg-main);
+      background: var(--color-cyan);
+      box-shadow: 0 0 15px var(--color-cyan-glow);
+      font-weight: 600;
+    }
+
+    .pill-item-purple.active {
+      background: var(--color-purple);
+      box-shadow: 0 0 15px var(--color-purple-glow);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 380px;
+      width: 100%;
+    }
+
+    /* ==========================================
+       DATA TABLE SECTION
+       ========================================== */
+    .table-panel {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .table-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .search-box {
+      position: relative;
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border-radius: 12px;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .search-input:focus {
+      border-color: var(--color-cyan);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .table-meta {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .table-meta span {
+      font-weight: 600;
+      color: var(--color-cyan);
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9375rem;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.8125rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+      user-select: none;
+      transition: var(--transition-smooth);
+    }
+
+    th:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    th .sort-icon {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.25rem;
+      vertical-align: middle;
+      font-size: 0.75rem;
+      opacity: 0.5;
+    }
+
+    th.active-sort {
+      color: var(--color-cyan);
+    }
+    
+    th.active-sort .sort-icon {
+      opacity: 1;
+    }
+
+    td {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      vertical-align: middle;
+      transition: var(--transition-smooth);
+    }
+
+    tr {
+      transition: var(--transition-smooth);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    tbody tr.highlight-new td {
+      animation: highlightRow 2s ease-out;
+    }
+
+    /* Badges & Price formatting inside table */
+    .model-cell {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .price-cell {
+      font-family: 'Fira Code', monospace;
+      font-weight: 600;
+    }
+
+    .tag-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .tag-badge.drop {
+      background: rgba(5, 255, 192, 0.1);
+      border: 1px solid rgba(5, 255, 192, 0.2);
+      color: var(--color-green);
+    }
+
+    .tag-badge.up {
+      background: rgba(255, 51, 102, 0.1);
+      border: 1px solid rgba(255, 51, 102, 0.2);
+      color: var(--color-red);
+    }
+
+    .tag-badge.stable {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+    }
+
+    .tag-badge.new {
+      background: rgba(155, 81, 224, 0.1);
+      border: 1px solid rgba(155, 81, 224, 0.2);
+      color: var(--color-purple);
+    }
+
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--color-cyan);
+      text-decoration: none;
+      padding: 0.375rem 0.75rem;
+      border-radius: 8px;
+      background: rgba(0, 242, 254, 0.05);
+      border: 1px solid rgba(0, 242, 254, 0.1);
+      transition: var(--transition-smooth);
+    }
+
+    .link-btn:hover {
+      background: var(--color-cyan);
+      color: var(--bg-main);
+      box-shadow: 0 0 12px var(--color-cyan-glow);
+    }
+
+    /* Pagination */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+    }
+
+    .pagination-info {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    .pagination-btns {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-page {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 0.5rem 0.875rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-page:hover:not(:disabled) {
+      border-color: var(--color-cyan);
+      color: var(--text-primary);
+    }
+
+    .btn-page:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+
+
+    /* ==========================================
+       MODAL VIEW LISTING DETAILS
+       ========================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(7, 10, 18, 0.8);
+      backdrop-filter: blur(8px);
+      z-index: 1050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-content {
+      width: 500px;
+      max-width: calc(100vw - 2rem);
+      background: var(--bg-surface-solid);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      transform: scale(0.95);
+      transition: var(--transition-smooth);
+    }
+
+    .modal-backdrop.active .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-banner {
+      height: 120px;
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.1), rgba(155, 81, 224, 0.15));
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .modal-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 100% 0%, var(--color-cyan-glow), transparent 60%);
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      position: relative;
+      z-index: 1;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .modal-info-row {
+      display: flex;
+      justify-content: space-between;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-info-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .modal-info-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    .modal-info-value {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+    }
+
+    .modal-info-value.highlight-price {
+      font-family: 'Fira Code', monospace;
+      color: var(--color-cyan);
+      font-size: 1.0625rem;
+    }
+
+    .modal-info-value.highlight-drop {
+      color: var(--color-green);
+    }
+
+    .modal-footer {
+      padding: 1.25rem 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .btn-secondary {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 0.625rem 1.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--text-secondary);
+      color: var(--text-primary);
+    }
+
+    /* ==========================================
+       KEYFRAMES ANIMATIONS
+       ========================================== */
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 8px var(--color-green);
+      }
+      50% {
+        opacity: 0.4;
+        box-shadow: 0 0 2px var(--color-green);
+      }
+    }
+
+    @keyframes highlightRow {
+      0% {
+        background-color: rgba(5, 255, 192, 0.2);
+        box-shadow: inset 0 0 15px rgba(5, 255, 192, 0.2);
+      }
+      100% {
+        background-color: transparent;
+        box-shadow: none;
+      }
+    }
+
+    /* ==========================================
+       RESPONSIVE ADJUSTMENTS
+       ========================================== */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+        gap: 1rem;
+      }
+      header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 1rem;
+      }
+      .telemetry-status {
+        width: 100%;
+        justify-content: space-between;
+      }
+      .chart-panel {
+        padding: 1rem;
+      }
+      .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .chart-wrapper {
+        height: 280px;
+      }
+      .table-panel {
+        padding: 1rem;
+      }
+      .table-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .search-box {
+        max-width: 100%;
+      }
+    }
+
+    /* ==========================================
+       FILTER PANEL STYLES
+       ========================================== */
+    .filter-panel {
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .filter-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .filter-label {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--color-green);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-shadow: 0 0 8px rgba(5, 255, 192, 0.25);
+    }
+
+    .filter-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .filter-input-wrapper .input-icon {
+      position: absolute;
+      left: 1rem;
+      color: var(--color-cyan);
+      filter: drop-shadow(0 0 4px var(--color-cyan-glow));
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    .filter-input, .filter-select {
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.875rem;
+      background: #111622;
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      color: var(--text-primary);
+      padding: 0.625rem 1rem 0.625rem 2.5rem;
+      border-radius: 10px;
+      outline: none;
+      box-shadow: 0 0 8px rgba(0, 242, 254, 0.05);
+      transition: var(--transition-smooth);
+    }
+
+    .filter-select {
+      appearance: none;
+      cursor: pointer;
+      padding-right: 2.5rem;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300F2FE'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1rem;
+    }
+
+    .filter-select option {
+      background-color: var(--bg-surface-solid);
+      color: var(--text-primary);
+    }
+
+    .filter-input:focus, .filter-select:focus {
+      border-color: var(--color-cyan);
+      box-shadow: 0 0 15px var(--color-cyan-glow);
+      background: #161B26;
+    }
+
+    @media (max-width: 768px) {
+      .filter-panel {
+        padding: 1.25rem 1rem;
+      }
+      .filter-controls {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <header class="glass-panel">
+      <a href="#" class="brand">
+        <div class="brand-logo">
+          <i data-lucide="gauge" style="width: 24px; height: 24px;"></i>
+        </div>
+        <div class="brand-text">Vites<span>Tracker</span></div>
+      </a>
+      
+      <div class="telemetry-status">
+        <button class="btn-lang" id="btnLang" onclick="toggleLanguage()">
+          <span class="lang-text active" id="lang-tr">TR</span>
+          <span class="lang-divider">|</span>
+          <span class="lang-text" id="lang-en">EN</span>
+        </button>
+
+        <div class="status-badge">
+          <div class="status-dot"></div>
+          <span data-i18n="tracker_status">Takip Motoru: Aktif</span>
+        </div>
+        <button class="btn-scrape" id="btnScrape" onclick="triggerLiveScrape()">
+          <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+          <span data-i18n="run_scrape">Canlı Tarama Başlat</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      
+      <div class="glass-panel summary-card card-avg">
+        <div class="summary-header">
+          <span class="summary-title" id="avgPriceTitle" data-i18n="avg_price">Ortalama Fiyat</span>
+          <div class="summary-icon">
+            <i data-lucide="turkish-lira" style="width: 20px; height: 20px;"></i>
+          </div>
+        </div>
+        <div class="summary-body">
+          <div class="summary-value" id="statAvgPrice">$79,150</div>
+          
+          <div class="min-max-prices" id="minMaxContainer" style="display: flex; gap: 0.75rem; font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            <span>Min: <strong id="statMinPrice" style="color: var(--color-green); font-family: 'Fira Code', monospace;">-</strong></span>
+            <span style="opacity: 0.3;">|</span>
+            <span>Max: <strong id="statMaxPrice" style="color: var(--color-red); font-family: 'Fira Code', monospace;">-</strong></span>
+          </div>
+
+          <div class="summary-footer" style="margin-top: 0.5rem;">
+            <span class="change-badge positive">
+              <i data-lucide="trending-down" style="width: 12px; height: 12px;"></i>
+              -3.8%
+            </span>
+            <span class="change-label" data-i18n="vs_last_month">geçen aya göre</span>
+          </div>
+        </div>
+        <div class="sparkline-container">
+          <svg viewBox="0 0 100 30" width="100%" height="100%" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGlow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-cyan)" stop-opacity="0.3"></stop>
+                <stop offset="100%" stop-color="var(--color-cyan)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M 0 20 Q 20 15 40 25 T 80 10 T 100 5" fill="none" stroke="var(--color-cyan)" stroke-width="2.5" stroke-linecap="round"></path>
+            <path d="M 0 20 Q 20 15 40 25 T 80 10 T 100 5 L 100 30 L 0 30 Z" fill="url(#sparkGlow)"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="glass-panel summary-card card-total">
+        <div class="summary-header">
+          <span class="summary-title" data-i18n="total_listings">Toplam İlanlar</span>
+          <div class="summary-icon">
+            <i data-lucide="database" style="width: 20px; height: 20px;"></i>
+          </div>
+        </div>
+        <div class="summary-body">
+          <div class="summary-value" id="statTotalListings">1,420</div>
+          <div class="summary-footer">
+            <span class="change-badge" style="background: rgba(155, 81, 224, 0.08); border: 1px solid rgba(155, 81, 224, 0.15); color: var(--color-purple);">
+              <i data-lucide="plus" style="width: 12px; height: 12px;"></i>
+              <span id="statNewListingsCount">24</span> <span data-i18n="new_badge">Yeni</span>
+            </span>
+            <span class="change-label" data-i18n="added_today">bugün eklendi</span>
+          </div>
+        </div>
+        <div class="sparkline-container">
+          <svg viewBox="0 0 100 30" width="100%" height="100%" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGlowPurple" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-purple)" stop-opacity="0.3"></stop>
+                <stop offset="100%" stop-color="var(--color-purple)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M 0 28 Q 15 20 35 15 T 70 8 T 100 2" fill="none" stroke="var(--color-purple)" stroke-width="2.5" stroke-linecap="round"></path>
+            <path d="M 0 28 Q 15 20 35 15 T 70 8 T 100 2 L 100 30 L 0 30 Z" fill="url(#sparkGlowPurple)"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="glass-panel summary-card card-drop">
+        <div class="summary-header">
+          <span class="summary-title" data-i18n="biggest_price_drop">En Büyük Fiyat Düşüşü</span>
+          <div class="summary-icon">
+            <i data-lucide="chevron-down" style="width: 20px; height: 20px;"></i>
+          </div>
+        </div>
+        <div class="summary-body">
+          <div class="summary-value" id="statDropValue" style="color: var(--color-green); text-shadow: 0 0 10px rgba(5, 255, 192, 0.2);">-$6,800</div>
+          <div class="summary-footer">
+            <span class="change-badge positive">
+              <i data-lucide="tag" style="width: 12px; height: 12px;"></i>
+              Porsche 911 S
+            </span>
+            <span class="change-label">2021 Model</span>
+          </div>
+        </div>
+        <div class="sparkline-container">
+          <svg viewBox="0 0 100 30" width="100%" height="100%" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sparkGlowGreen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--color-green)" stop-opacity="0.3"></stop>
+                <stop offset="100%" stop-color="var(--color-green)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M 0 2 Q 25 5 50 15 T 75 22 T 100 28" fill="none" stroke="var(--color-green)" stroke-width="2.5" stroke-linecap="round"></path>
+            <path d="M 0 2 Q 25 5 50 15 T 75 22 T 100 28 L 100 30 L 0 30 Z" fill="url(#sparkGlowGreen)"></path>
+          </svg>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="glass-panel filter-panel">
+      <div class="filter-header panel-title">
+        <i data-lucide="sliders-horizontal" style="width: 18px; height: 18px;"></i>
+        <span data-i18n="filter_panel_title">Filtreleme Paneli</span>
+      </div>
+      <div class="filter-controls">
+        <div class="filter-group">
+          <label class="filter-label" for="maxKMInput" data-i18n="max_km_label">Maksimum Kilometre</label>
+          <div class="filter-input-wrapper">
+            <i data-lucide="gauge" class="input-icon"></i>
+            <input type="number" id="maxKMInput" class="filter-input" data-i18n-placeholder="max_km_placeholder" placeholder="Örn: 150000" min="0" oninput="handleFilterChange()">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" data-i18n="year_range_label">Model Yılı Aralığı</label>
+          <div class="filter-input-wrapper" style="display: flex; gap: 0.5rem;">
+            <i data-lucide="calendar" class="input-icon"></i>
+            <input type="number" id="minYearInput" class="filter-input" data-i18n-placeholder="min_year_placeholder" placeholder="Min Yıl" min="0" oninput="handleFilterChange()">
+            <input type="number" id="maxYearInput" class="filter-input" data-i18n-placeholder="max_year_placeholder" placeholder="Max Yıl" min="0" oninput="handleFilterChange()" style="padding-left: 1rem;">
+          </div>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label" for="conditionSelect" data-i18n="condition_label">Araç Durumu</label>
+          <div class="filter-input-wrapper">
+            <i data-lucide="sparkles" class="input-icon"></i>
+            <select id="conditionSelect" class="filter-select" onchange="handleFilterChange()">
+              <option value="all" data-i18n="cond_all" selected>Tümü</option>
+              <option value="new" data-i18n="cond_new">Sıfır (0 km)</option>
+              <option value="used" data-i18n="cond_used">İkinci El</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-panel table-panel">
+      <div class="table-toolbar">
+        <div class="panel-title">
+          <i data-lucide="list"></i>
+          <span data-i18n="inventory_title">Takip Edilen Araç Envanteri</span>
+        </div>
+        
+        <div class="search-box">
+          <i data-lucide="search"></i>
+          <input type="text" id="searchInput" class="search-input" data-i18n-placeholder="search_placeholder" placeholder="Model veya marka ile ara..." onkeydown="return handleSearchKeyPress(event)" oninput="handleSearchInput(event)">
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th id="th-model" onclick="sortTable('model')" class="active-sort">
+                <span id="lblThModel" data-i18n="th_model">Araç Modeli</span> <span class="sort-icon" id="sort-model"><i data-lucide="chevron-down" style="width: 12px; height: 12px;"></i></span>
+              </th>
+              <th id="th-price" onclick="sortTable('price')">
+                <span id="lblThPrice" data-i18n="th_price">Fiyat</span> <span class="sort-icon" id="sort-price"><i data-lucide="chevrons-up-down" style="width: 12px; height: 12px;"></i></span>
+              </th>
+              <th id="th-year" onclick="sortTable('year')">
+                <span id="lblThYear" data-i18n="th_year">Yıl</span> <span class="sort-icon" id="sort-year"><i data-lucide="chevrons-up-down" style="width: 12px; height: 12px;"></i></span>
+              </th>
+              <th id="th-kilometre" onclick="sortTable('kilometre')">
+                <span id="lblThKM" data-i18n="th_km">Kilometre</span> <span class="sort-icon" id="sort-kilometre"><i data-lucide="chevrons-up-down" style="width: 12px; height: 12px;"></i></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody">
+            </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <div class="pagination-info" id="paginationInfo">
+          Gösterilen 1-10 / 12 araç
+        </div>
+        <div class="pagination-btns">
+          <button class="btn-page" id="btnPrevPage" onclick="prevPage()"><i data-lucide="arrow-left" style="width: 14px; height: 14px; vertical-align: middle;"></i> <span id="btnPrevText" data-i18n="btn_prev">Önceki</span></button>
+          <button class="btn-page" id="btnNextPage" onclick="nextPage()"><span id="btnNextText" data-i18n="btn_next">Sonraki</span> <i data-lucide="arrow-right" style="width: 14px; height: 14px; vertical-align: middle;"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="glass-panel chart-panel">
+      <div class="chart-header">
+        <div class="panel-title">
+          <i data-lucide="area-chart"></i>
+          <span data-i18n="market_trends">Piyasa Fiyat Trendleri</span>
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="marketChart"></canvas>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="modal-backdrop" id="detailsModal" onclick="closeDetailsModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-banner">
+        <div class="modal-title" id="modalTitle">VitesTracker</div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-info-row">
+          <span class="modal-info-label" data-i18n="th_model">Araç Modeli</span>
+          <span class="modal-info-value" id="modalModel" style="font-weight: 600;"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label" data-i18n="th_price">Fiyat</span>
+          <span class="modal-info-value highlight-price" id="modalPrice"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label" data-i18n="th_year">Yıl</span>
+          <span class="modal-info-value" id="modalYear"></span>
+        </div>
+        <div class="modal-info-row">
+          <span class="modal-info-label" data-i18n="th_km">Kilometre</span>
+          <span class="modal-info-value" id="modalKM" style="font-family: 'Fira Code', monospace;"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeDetailsModal(event)" data-i18n="modal_close">Pencereyi Kapat</button>
+      </div>
+    </div>
+  </div>
+    <script>
+    // ----------------------------------------------------
+    // 1. STATE & DATABASE SEEDING
+    // ----------------------------------------------------
+    let db = []; // Populated dynamically from JSON
+
+    // Chart timeline datasets (seed data representing market index curves in TL)
+    const timelineData = {
+      "30D": {
+        labels: ["Apr 22", "Apr 27", "May 02", "May 07", "May 12", "May 17", "May 22"],
+        datasets: {
+          all: [1080000, 1050000, 1030000, 1010000, 995000, 990000, 996495],
+          "Megane Icon": [1520000, 1500000, 1480000, 1460000, 1440000, 1420000, 1420000],
+          "Megane Joy": [1180000, 1160000, 1140000, 1120000, 1100000, 1080000, 1051650],
+          "Megane Touch": [1450000, 1430000, 1410000, 1390000, 1370000, 1390000, 1390000]
+        }
+      },
+      "90D": {
+        labels: ["Feb 22", "Mar 08", "Mar 22", "Apr 05", "Apr 19", "May 03", "May 22"],
+        datasets: {
+          all: [1120000, 1090000, 1070000, 1040000, 1020000, 995000, 996495],
+          "Megane Icon": [1600000, 1580000, 1550000, 1510000, 1480000, 1440000, 1420000],
+          "Megane Joy": [1240000, 1210000, 1190000, 1160000, 1130000, 1090000, 1051650],
+          "Megane Touch": [1500000, 1480000, 1450000, 1420000, 1390000, 1390000, 1390000]
+        }
+      }
+    };
+
+    // Internationalization Translation Dictionaries
+    const translations = {
+      tr: {
+        tracker_status: "Takip Motoru: Aktif",
+        run_scrape: "Canlı Tarama Başlat",
+        avg_price: "Ortalama Fiyat",
+        vs_last_month: "geçen aya göre",
+        total_listings: "Toplam İlanlar",
+        added_today: "bugün eklendi",
+        new_badge: "Yeni",
+        biggest_price_drop: "En Büyük Fiyat Düşüşü",
+        model_suffix: "Modeli",
+        market_trends: "Fiyat vs. Kilometre Grafiği",
+        all_models: "Tüm Modeller",
+        days_30: "30 Gün",
+        days_90: "90 Gün",
+        chart_avg_label: "Fiyat (TL)",
+        chart_trend_label: "Fiyatı (TL)",
+        inventory_title: "Takip Edilen Araç Envanteri",
+        search_placeholder: "Model veya marka ile ara...",
+        th_model: "Araç Modeli",
+        th_price: "Fiyat",
+        th_year: "Yıl",
+        th_km: "Kilometre",
+        showing_records: "Gösterilen: <span>{start}-{end}</span> / <span>{total}</span> araç",
+        btn_prev: "Önceki",
+        btn_next: "Sonraki",
+        no_records: "Eşleşen araç bulunamadı.",
+        modal_close: "Pencereyi Kapat",
+        month_names: ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"],
+        filter_panel_title: "Filtreleme Paneli",
+        max_km_label: "Maksimum Kilometre",
+        max_km_placeholder: "Örn: 150000",
+        condition_label: "Araç Durumu",
+        cond_all: "Tümü",
+        cond_new: "Sıfır (0 km)",
+        cond_used: "İkinci El",
+        hasan_avg_title: "Filtrelenmiş Ortalama",
+        year_range_label: "Model Yılı Aralığı",
+        min_year_placeholder: "Min Yıl",
+        max_year_placeholder: "Max Yıl",
+        veri_bekleniyor: "Veri Bekleniyor"
+      },
+      en: {
+        tracker_status: "Tracker Engine: Active",
+        run_scrape: "Run Live Scrape",
+        avg_price: "Average Price",
+        vs_last_month: "vs last month",
+        total_listings: "Total Listings",
+        added_today: "added today",
+        new_badge: "New",
+        biggest_price_drop: "Biggest Price Drop",
+        model_suffix: "Model",
+        market_trends: "Price vs. Mileage Graph",
+        all_models: "All Models",
+        days_30: "30 Days",
+        days_90: "90 Days",
+        chart_avg_label: "Price (TL)",
+        chart_trend_label: "Price (TL)",
+        inventory_title: "Monitored Vehicle Inventory",
+        search_placeholder: "Search by model or brand...",
+        th_model: "Vehicle Model",
+        th_price: "Price",
+        th_year: "Year",
+        th_km: "Kilometers",
+        showing_records: "Showing <span>{start}-{end}</span> of <span>{total}</span> vehicles",
+        btn_prev: "Prev",
+        btn_next: "Next",
+        no_records: "No matching vehicles found.",
+        modal_close: "Close Window",
+        month_names: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        filter_panel_title: "Filter Panel",
+        max_km_label: "Maximum Kilometers",
+        max_km_placeholder: "e.g. 150000",
+        condition_label: "Vehicle Condition",
+        cond_all: "All",
+        cond_new: "Brand New (0 km)",
+        cond_used: "Second Hand",
+        hasan_avg_title: "Filtered Average",
+        year_range_label: "Model Year Range",
+        min_year_placeholder: "Min Year",
+        max_year_placeholder: "Max Year",
+        veri_bekleniyor: "Waiting for Data"
+      }
+    };
+
+    // Controller Filter States
+    let currentLang = "tr"; // Default MUST be Turkish (TR)
+    let currentFilterModel = "all";
+    let currentTimeframe = "30D";
+    let searchQuery = "";
+    let filterMaxKM = null;
+    let filterMinYear = null;
+    let filterMaxYear = null;
+    let filterCondition = "all";
+    let sortColumn = "model";
+    let sortAscending = true;
+    let currentPage = 1;
+    const recordsPerPage = 6;
+
+    // Charts instances
+    let chartInstance = null;
+
+    // ----------------------------------------------------
+    // 2. DASHBOARD LIFECYCLE INITIALIZER
+    // ----------------------------------------------------
+    document.addEventListener("DOMContentLoaded", () => {
+      // Setup Lucide icons
+      lucide.createIcons();
+
+      // Setup and draw primary Line Chart
+      initMarketChart();
+
+      // Apply primary default language configuration (TR)
+      applyLanguage('tr');
+
+      // Initialize the dashboard in a clean, empty state
+      triggerEmptyState();
+    });
+
+    // ----------------------------------------------------
+    // 2.1 JSON FETCH API METHOD
+    // ----------------------------------------------------
+    async function fetchData() {
+      try {
+        const response = await fetch("ilan_verileri.json");
+        if (!response.ok) {
+          throw new Error("HTTP status " + response.status);
+        }
+        const data = await response.json();
+        db = parseJSONData(data);
+        updateStats();
+        renderTable();
+      } catch (error) {
+        console.error("Strict JSON fetch failed (highly likely due to local file:// protocol CORS block):", error);
+      }
+    }
+
+    function parseJSONData(data) {
+      if (!Array.isArray(data)) return [];
+      return data.map((item, index) => {
+        let parsedPrice = 0;
+        if (typeof item.fiyat === 'string') {
+          parsedPrice = parseInt(item.fiyat.replace(/[^0-9]/g, ''), 10) || 0;
+        } else if (typeof item.fiyat === 'number') {
+          parsedPrice = item.fiyat;
+        } else if (item.price) {
+          parsedPrice = typeof item.price === 'string' ? parseInt(item.price.replace(/[^0-9]/g, ''), 10) || 0 : item.price;
+        }
+
+        let parsedKM = 0;
+        if (typeof item.kilometre === 'string') {
+          parsedKM = parseInt(item.kilometre.replace(/[^0-9]/g, ''), 10) || 0;
+        } else if (typeof item.kilometre === 'number') {
+          parsedKM = item.kilometre;
+        } else if (item.kilometre === undefined && item.km !== undefined) {
+          parsedKM = typeof item.km === 'string' ? parseInt(item.km.replace(/[^0-9]/g, ''), 10) || 0 : item.km;
+        }
+
+        const rawYear = item.yil !== undefined ? item.yil : (item.year !== undefined ? item.year : 0);
+        const parsedYear = parseInt(rawYear, 10) || 0;
+        const modelName = item.model || item.Model || item.title || "Megane";
+
+        return {
+          id: index + 1,
+          model: modelName,
+          price: parsedPrice,
+          year: parsedYear,
+          kilometre: parsedKM,
+          isNewEntry: false
+        };
+      });
+    }
+
+    // ----------------------------------------------------
+    // 2.2 INTERNATIONALIZATION TRANSLATOR FUNCTIONS
+    // ----------------------------------------------------
+    function applyLanguage(lang) {
+      currentLang = lang;
+
+      // Update languages switch button active status
+      if (lang === 'tr') {
+        document.getElementById("lang-tr").classList.add("active");
+        document.getElementById("lang-en").classList.remove("active");
+      } else {
+        document.getElementById("lang-tr").classList.remove("active");
+        document.getElementById("lang-en").classList.add("active");
+      }
+
+      // Scan and translate static data-i18n items
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (translations[lang][key]) {
+          el.innerHTML = translations[lang][key];
+        }
+      });
+
+      // Scan and translate placeholders
+      document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        if (translations[lang][key]) {
+          el.placeholder = translations[lang][key];
+        }
+      });
+
+      // Synchronize stats card text elements
+      updateStats();
+
+      // Redraw line charts with translated labels and tooltips
+      updateChartData();
+
+      // Repopulate tables and pages
+      renderTable();
+    }
+
+    function toggleLanguage() {
+      const nextLang = currentLang === 'tr' ? 'en' : 'tr';
+      applyLanguage(nextLang);
+    }
+
+    // ----------------------------------------------------
+    // 3. STATS & ANALYTICS UPDATES
+    // ----------------------------------------------------
+    function getFilteredData() {
+      if (db.length === 0) return [];
+      return db.filter(item => {
+        const matchesSearch = item.model.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                              item.year.toString().includes(searchQuery) ||
+                              item.kilometre.toString().includes(searchQuery);
+                              
+        const matchesKM = (filterMaxKM === null || filterMaxKM === undefined || filterMaxKM === '') || item.kilometre <= filterMaxKM;
+        
+        const matchesMinYear = (filterMinYear === null || filterMinYear === undefined || filterMinYear === '') || item.year >= filterMinYear;
+        const matchesMaxYear = (filterMaxYear === null || filterMaxYear === undefined || filterMaxYear === '') || item.year <= filterMaxYear;
+        
+        let matchesCondition = true;
+        if (filterCondition === 'new') {
+          matchesCondition = (item.kilometre === 0);
+        } else if (filterCondition === 'used') {
+          matchesCondition = (item.kilometre > 0);
+        }
+        
+        return matchesSearch && matchesKM && matchesMinYear && matchesMaxYear && matchesCondition;
+      });
+    }
+
+    function updateStats(filteredData) {
+      const items = filteredData || getFilteredData();
+      
+      // Update new listings dynamic counter badge
+      const countNew = db.length === 0 ? 0 : (db.filter(item => item.isNewEntry).length + 24); // baseline seeds
+      const newBadgeCounter = document.getElementById("statNewListingsCount");
+      if (newBadgeCounter) {
+        newBadgeCounter.innerText = countNew;
+      }
+
+      // Biggest Price Drop Card Update - Dynamically empty when no historical data exists
+      const dropValEl = document.getElementById("statDropValue");
+      const footer = document.querySelector(".card-drop .summary-footer");
+      
+      if (db.length === 0 || items.length === 0) {
+        if (dropValEl) dropValEl.innerText = "0 TL";
+        if (footer) {
+          footer.innerHTML = `
+            <span class="change-label" data-i18n="veri_bekleniyor">${translations[currentLang].veri_bekleniyor}</span>
+          `;
+        }
+      } else {
+        // Completely REMOVE hardcoded values and invented 45000 drop. Make footer empty.
+        if (dropValEl) dropValEl.innerText = "0 TL";
+        if (footer) {
+          footer.innerHTML = "";
+        }
+      }
+
+      // Total Listings card - update based on active filtered results
+      document.getElementById("statTotalListings").innerText = items.length.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US');
+
+      // Title Card Rename trigger
+      const isFiltered = (filterMaxKM !== null && filterMaxKM !== undefined && filterMaxKM !== '') || 
+                         (filterMinYear !== null && filterMinYear !== undefined && filterMinYear !== '') ||
+                         (filterMaxYear !== null && filterMaxYear !== undefined && filterMaxYear !== '') ||
+                         (filterCondition !== 'all');
+      const titleEl = document.getElementById("avgPriceTitle");
+      if (titleEl) {
+        if (isFiltered) {
+          titleEl.innerText = translations[currentLang].hasan_avg_title;
+          titleEl.setAttribute("data-i18n", "hasan_avg_title");
+        } else {
+          titleEl.innerText = translations[currentLang].avg_price;
+          titleEl.setAttribute("data-i18n", "avg_price");
+        }
+      }
+
+      const avgPriceEl = document.getElementById("statAvgPrice");
+      const minPriceEl = document.getElementById("statMinPrice");
+      const maxPriceEl = document.getElementById("statMaxPrice");
+
+      if (items.length === 0) {
+        if (avgPriceEl) avgPriceEl.innerText = "0 TL";
+        if (minPriceEl) minPriceEl.innerText = "0 TL";
+        if (maxPriceEl) maxPriceEl.innerText = "0 TL";
+        lucide.createIcons();
+        return;
+      }
+
+      // Math calculations using ONLY filtered results
+      const totalSum = items.reduce((acc, curr) => acc + curr.price, 0);
+      const avgPrice = Math.round(totalSum / items.length);
+      const minPrice = Math.min(...items.map(item => item.price));
+      const maxPrice = Math.max(...items.map(item => item.price));
+
+      if (avgPriceEl) avgPriceEl.innerText = formatCurrency(avgPrice);
+      if (minPriceEl) minPriceEl.innerText = formatCurrency(minPrice);
+      if (maxPriceEl) maxPriceEl.innerText = formatCurrency(maxPrice);
+
+      lucide.createIcons();
+    }
+
+    function formatCurrency(val) {
+      const formatted = new Intl.NumberFormat(currentLang === 'tr' ? 'tr-TR' : 'en-US', {
+        maximumFractionDigits: 0
+      }).format(val);
+      return `${formatted} TL`;
+    }
+
+    function formatKilometers(val) {
+      const formatted = new Intl.NumberFormat(currentLang === 'tr' ? 'tr-TR' : 'en-US', {
+        maximumFractionDigits: 0
+      }).format(val);
+      return `${formatted} km`;
+    }
+
+    // ----------------------------------------------------
+    // 4. CHART.JS CORE DRAWING & INTERACTION (PRICE VS. MILEAGE)
+    // ----------------------------------------------------
+    function getChartData() {
+      let items = getFilteredData();
+      
+      // Filter by model if a specific pill is active
+      if (currentFilterModel !== "all") {
+        items = items.filter(item => item.model.toLowerCase().includes(currentFilterModel.toLowerCase()));
+      }
+      
+      // Sort by kilometer in ascending order before passing it to the chart
+      const sorted = [...items].sort((a, b) => a.kilometre - b.kilometre);
+      
+      const labels = sorted.map(item => item.kilometre.toLocaleString(currentLang === 'tr' ? 'tr-TR' : 'en-US'));
+      const prices = sorted.map(item => item.price);
+      
+      return { labels, prices, rawItems: sorted };
+    }
+
+    function initMarketChart() {
+      const ctx = document.getElementById('marketChart').getContext('2d');
+      
+      // Gradient background fills for the line charts
+      const cyanGlowGrad = ctx.createLinearGradient(0, 0, 0, 350);
+      cyanGlowGrad.addColorStop(0, 'rgba(0, 242, 254, 0.25)');
+      cyanGlowGrad.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+
+      const purpleGlowGrad = ctx.createLinearGradient(0, 0, 0, 350);
+      purpleGlowGrad.addColorStop(0, 'rgba(155, 81, 224, 0.25)');
+      purpleGlowGrad.addColorStop(1, 'rgba(155, 81, 224, 0.0)');
+
+      const { labels, prices } = getChartData();
+      const activeColor = currentFilterModel === 'all' ? '#00F2FE' : '#9B51E0';
+      const activeGrad = currentFilterModel === 'all' ? cyanGlowGrad : purpleGlowGrad;
+      const activeLabel = currentFilterModel === 'all' ? translations[currentLang].chart_avg_label : `${currentFilterModel} ${translations[currentLang].chart_trend_label}`;
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: activeLabel,
+            data: prices,
+            borderColor: activeColor,
+            borderWidth: 3,
+            pointBackgroundColor: activeColor,
+            pointBorderColor: '#0B0F19',
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointHoverBorderWidth: 3,
+            lineTension: 0.35,
+            fill: true,
+            backgroundColor: activeGrad,
+            shadowColor: activeColor,
+            shadowBlur: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: '#161B26',
+              titleColor: '#F3F4F6',
+              bodyColor: '#F3F4F6',
+              borderColor: 'rgba(255,255,255,0.08)',
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              font: {
+                family: 'Inter'
+              },
+              callbacks: {
+                title: function(context) {
+                  const dataIndex = context[0].dataIndex;
+                  const chartData = getChartData();
+                  const item = chartData.rawItems[dataIndex];
+                  return item ? item.model : '';
+                },
+                label: function(context) {
+                  const dataIndex = context.dataIndex;
+                  const chartData = getChartData();
+                  const item = chartData.rawItems[dataIndex];
+                  let label = `${currentLang === 'tr' ? 'Fiyat' : 'Price'}: ${formatCurrency(context.raw)}`;
+                  if (item) {
+                    label += ` (${item.year})`;
+                  }
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.03)',
+                borderColor: 'transparent'
+              },
+              ticks: {
+                color: '#9CA3AF',
+                font: {
+                  family: 'Inter',
+                  size: 11
+                },
+                callback: function(value, index, values) {
+                  const label = this.getLabelForValue(value);
+                  return label ? label + ' km' : '';
+                }
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.03)',
+                borderColor: 'transparent'
+              },
+              ticks: {
+                color: '#9CA3AF',
+                font: {
+                  family: 'Inter',
+                  size: 11
+                },
+                callback: function(value) {
+                  if (value >= 1000000) {
+                    return (value / 1000000).toFixed(2) + 'M TL';
+                  } else {
+                    return (value / 1000) + 'k TL';
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function switchChartModel(model, element) {
+      // Toggle active states on DOM pills
+      const parent = element.parentElement;
+      parent.querySelectorAll('.pill-item').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+
+      currentFilterModel = model;
+      updateChartData();
+    }
+
+    function updateChartData() {
+      if (!chartInstance) return;
+
+      const activeColor = currentFilterModel === 'all' ? '#00F2FE' : '#9B51E0';
+      const ctx = document.getElementById('marketChart').getContext('2d');
+      
+      const cyanGlowGrad = ctx.createLinearGradient(0, 0, 0, 350);
+      cyanGlowGrad.addColorStop(0, 'rgba(0, 242, 254, 0.2)');
+      cyanGlowGrad.addColorStop(1, 'rgba(0, 242, 254, 0.0)');
+
+      const purpleGlowGrad = ctx.createLinearGradient(0, 0, 0, 350);
+      purpleGlowGrad.addColorStop(0, 'rgba(155, 81, 224, 0.2)');
+      purpleGlowGrad.addColorStop(1, 'rgba(155, 81, 224, 0.0)');
+
+      const activeGrad = currentFilterModel === 'all' ? cyanGlowGrad : purpleGlowGrad;
+      const activeLabel = currentFilterModel === 'all' 
+        ? translations[currentLang].chart_avg_label 
+        : `${currentFilterModel} ${translations[currentLang].chart_trend_label}`;
+
+      const { labels, prices } = getChartData();
+
+      chartInstance.data.labels = labels;
+      chartInstance.data.datasets[0].data = prices;
+      chartInstance.data.datasets[0].borderColor = activeColor;
+      chartInstance.data.datasets[0].pointBackgroundColor = activeColor;
+      chartInstance.data.datasets[0].backgroundColor = activeGrad;
+      chartInstance.data.datasets[0].label = activeLabel;
+      
+      chartInstance.update();
+    }
+
+    // ----------------------------------------------------
+    // 5. INVENTORY TABLE CONTROLLER (SEARCH, SORT, PAGINATE)
+    // ----------------------------------------------------
+    function renderTable() {
+      const tbody = document.getElementById("inventoryTableBody");
+      tbody.innerHTML = "";
+
+      // 5.1 Filters data by search keyword, max kilometers, and condition
+      let filteredData = getFilteredData();
+
+      // Update statistics panel with dynamic math using only filtered results
+      updateStats(filteredData);
+
+      // Update the Price vs. Mileage chart instantly
+      updateChartData();
+
+      // 5.2 Sorts data
+      filteredData.sort((a, b) => {
+        let valA = a[sortColumn];
+        let valB = b[sortColumn];
+
+        if (typeof valA === 'string') {
+          return sortAscending ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        } else {
+          return sortAscending ? valA - valB : valB - valA;
+        }
+      });
+
+      // 5.3 Pagination slicing
+      const totalRecords = filteredData.length;
+      const totalPages = Math.ceil(totalRecords / recordsPerPage) || 1;
+      
+      if (currentPage > totalPages) currentPage = totalPages;
+      const startIndex = (currentPage - 1) * recordsPerPage;
+      const endIndex = Math.min(startIndex + recordsPerPage, totalRecords);
+      const paginatedData = filteredData.slice(startIndex, endIndex);
+
+      // 5.4 DOM creation
+      if (totalRecords === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 3rem 0;">${translations[currentLang].no_records}</td></tr>`;
+      } else {
+        paginatedData.forEach(item => {
+          const tr = document.createElement("tr");
+          tr.setAttribute("id", `row-${item.id}`);
+          tr.style.cursor = "pointer";
+          tr.onclick = (e) => openDetailsModal(item, e);
+          if (item.isNewEntry) {
+            tr.classList.add("highlight-new");
+          }
+
+          // Bullet color indicator based on Megane trims
+          let bulletColor = "var(--color-cyan)";
+          if (item.model.includes("Icon")) bulletColor = "var(--color-green)";
+          if (item.model.includes("Joy")) bulletColor = "var(--color-purple)";
+          if (item.model.includes("Touch")) bulletColor = "var(--color-cyan)";
+          if (item.model.includes("Exception")) bulletColor = "var(--color-red)";
+
+          tr.innerHTML = `
+            <td>
+              <div class="model-cell">
+                <span class="brand-badge" style="background-color: ${bulletColor}; box-shadow: 0 0 8px ${bulletColor}80;"></span>
+                <span>${item.model}</span>
+              </div>
+            </td>
+            <td class="price-cell" style="color: var(--color-cyan); font-weight: 600;">${formatCurrency(item.price)}</td>
+            <td style="color: var(--text-secondary); font-size: 0.9375rem; font-weight: 500;">${item.year}</td>
+            <td style="color: var(--text-secondary); font-size: 0.9375rem; font-family: 'Fira Code', monospace;">${formatKilometers(item.kilometre)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Sync Pagination footer text
+      document.getElementById("paginationInfo").innerHTML = translations[currentLang].showing_records
+        .replace("{start}", totalRecords === 0 ? 0 : startIndex + 1)
+        .replace("{end}", endIndex)
+        .replace("{total}", totalRecords);
+      document.getElementById("btnPrevPage").disabled = (currentPage === 1);
+      document.getElementById("btnNextPage").disabled = (currentPage === totalPages);
+
+      // Re-trigger icon draw
+      lucide.createIcons();
+    }
+
+    // Interactive Sorting
+    function sortTable(column) {
+      if (sortColumn === column) {
+        sortAscending = !sortAscending;
+      } else {
+        sortColumn = column;
+        sortAscending = true;
+      }
+
+      // Toggle visual header classes
+      document.querySelectorAll("th").forEach(th => th.classList.remove("active-sort"));
+      const activeTh = document.getElementById(`th-${column}`);
+      if (activeTh) activeTh.classList.add("active-sort");
+
+      // Reset all sort indicators
+      document.querySelectorAll("th .sort-icon").forEach(icon => {
+        icon.innerHTML = `<i data-lucide="chevrons-up-down" style="width: 12px; height: 12px;"></i>`;
+      });
+
+      // Update current indicator
+      const activeIcon = document.getElementById(`sort-${column}`);
+      if (activeIcon) {
+        if (sortAscending) {
+          activeIcon.innerHTML = `<i data-lucide="chevron-up" style="width: 12px; height: 12px;"></i>`;
+        } else {
+          activeIcon.innerHTML = `<i data-lucide="chevron-down" style="width: 12px; height: 12px;"></i>`;
+        }
+      }
+
+      currentPage = 1; // Reset to page 1
+      renderTable();
+    }
+
+    // Keypress handler for Enter key API trigger
+    function handleSearchKeyPress(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        const query = event.target.value.trim();
+        if (query === "") {
+          triggerEmptyState();
+        } else {
+          fetchAPISearch(query);
+        }
+        return false;
+      }
+    }
+
+    // Input event handler for instant empty state on clear
+    function handleSearchInput(event) {
+      const query = event.target.value.trim();
+      if (query === "") {
+        triggerEmptyState();
+      }
+    }
+
+    // Reset dashboard to empty state
+    function triggerEmptyState() {
+      db = [];
+      searchQuery = "";
+      currentPage = 1;
+      renderTable();
+    }
+
+    // Backend Search Fetcher
+    async function fetchAPISearch(query) {
+      const searchInput = document.getElementById("searchInput");
+      const originalPlaceholder = searchInput.placeholder;
+      const originalDataPlaceholder = searchInput.getAttribute("data-i18n-placeholder");
+
+      // Show Loading State
+      searchInput.placeholder = currentLang === 'tr' ? 'Piyasa Taranıyor...' : 'Scanning Market...';
+      searchInput.setAttribute("data-i18n-placeholder", "");
+      searchInput.disabled = true;
+
+      try {
+        const url = `http://localhost:5000/api/ara?q=${encodeURIComponent(query)}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error("API HTTP status " + response.status);
+        }
+        const responseData = await response.json();
+        
+        // Extract the '.veriler' array from the response envelope as requested
+        const allData = responseData.veriler || [];
+        
+        // Dynamically overwrite DB list state
+        db = parseJSONData(allData);
+        
+        // Reset current search state and reset to first page
+        searchQuery = "";
+        currentPage = 1;
+        
+        // Re-render table, recalculate summary metrics, and re-plot trends chart
+        renderTable();
+
+      } catch (error) {
+        console.error("API search request failed:", error);
+        db = [];
+        searchQuery = "";
+        currentPage = 1;
+        renderTable();
+      } finally {
+        // Restore input states
+        searchInput.placeholder = translations[currentLang].search_placeholder;
+        searchInput.setAttribute("data-i18n-placeholder", "search_placeholder");
+        searchInput.disabled = false;
+        searchInput.focus();
+      }
+    }
+
+    // Filter controls action
+    function handleFilterChange() {
+      const maxKMVal = document.getElementById("maxKMInput").value;
+      filterMaxKM = maxKMVal !== "" ? parseInt(maxKMVal, 10) : null;
+      
+      const minYearVal = document.getElementById("minYearInput").value;
+      filterMinYear = minYearVal !== "" ? parseInt(minYearVal, 10) : null;
+      
+      const maxYearVal = document.getElementById("maxYearInput").value;
+      filterMaxYear = maxYearVal !== "" ? parseInt(maxYearVal, 10) : null;
+      
+      filterCondition = document.getElementById("conditionSelect").value;
+      
+      currentPage = 1; // Reset to page 1
+      renderTable();
+    }
+
+    // Pagination trigger
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    }
+
+    function nextPage() {
+      currentPage++;
+      renderTable();
+    }
+
+    // ----------------------------------------------------
+    // 6. SCRAPER ACTION CONTROLLER (AKILLI YENİLEME)
+    // ----------------------------------------------------
+    function triggerLiveScrape() {
+      const searchInput = document.getElementById('searchInput');
+      const query = searchInput.value.trim();
+      
+      if (query !== '') {
+        fetchAPISearch(query);
+      } else {
+        searchInput.focus();
+        const originalPlaceholder = searchInput.placeholder;
+        searchInput.placeholder = 'Önce aranacak aracı yazın...';
+        setTimeout(() => {
+          searchInput.placeholder = originalPlaceholder;
+        }, 2000);
+      }
+    }
+
+    // ----------------------------------------------------
+    // 7. LISTING DETAILS MODAL CONTROLLER
+    // ----------------------------------------------------
+    function openDetailsModal(item, event) {
+      if (event) event.preventDefault();
+
+      // Title
+      document.getElementById("modalTitle").innerText = item.model;
+
+      // Real Data Fields mapping
+      document.getElementById("modalModel").innerText = item.model;
+      document.getElementById("modalPrice").innerText = formatCurrency(item.price);
+      document.getElementById("modalYear").innerText = item.year;
+      document.getElementById("modalKM").innerText = formatKilometers(item.kilometre);
+
+      // Slide In Backdrop
+      document.getElementById("detailsModal").classList.add("active");
+    }
+
+    function closeDetailsModal(event) {
+      if (event) event.preventDefault();
+      document.getElementById("detailsModal").classList.remove("active");
+    }
+  </script>
+</body>
+</html>

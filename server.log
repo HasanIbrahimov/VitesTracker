@@ -1,0 +1,18 @@
+Server starting up...
+VitesTracker Search API backend server starting on port 5000...
+Traceback (most recent call last):
+  File "C:\Users\Hasan\Desktop\VitesTracker\server.py", line 93, in <module>
+    run()
+    ~~~^^
+  File "C:\Users\Hasan\Desktop\VitesTracker\server.py", line 87, in run
+    httpd.serve_forever()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Hasan\AppData\Local\Programs\Python\Python314\Lib\socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+  File "C:\Users\Hasan\AppData\Local\Programs\Python\Python314\Lib\selectors.py", line 314, in select
+    r, w, _ = self._select(self._readers, self._writers, [], timeout)
+              ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Hasan\AppData\Local\Programs\Python\Python314\Lib\selectors.py", line 305, in _select
+    r, w, x = select.select(r, w, w, timeout)
+              ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
