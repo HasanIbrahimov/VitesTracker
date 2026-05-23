@@ -42,19 +42,24 @@ Proje, ilan sitelerindeki karmaşık arama parametrelerini akıllıca çözerek 
 Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları sırasıyla uygulayabilirsiniz:
 
 ### 1. Projeyi Klonlayın veya İndirin
+```bash
 git clone https://github.com/HasanIbrahimov/VitesTracker.git
 cd VitesTracker
+```
 
 ### 2. Gerekli Python Kütüphanelerini Kurun
+```bash
 pip install flask flask-cors requests beautifulsoup4
+```
 
 ### 3. Backend Sunucusunu Başlatın
+```bash
 python server.py
-
-Sunucu başarıyla başladığında terminalde "🚀 VitesTracker Sunucusu (Nihai Sürüm) Çalışıyor! (Port: 5000)" mesajını göreceksiniz.
+```
+Sunucu başarıyla başladığında terminalde `🚀 VitesTracker Sunucusu (Nihai Sürüm) Çalışıyor! (Port: 5000)` mesajını göreceksiniz.
 
 ### 4. Ön Yüzü Yayına Alın
-index.html dosyasını VS Code üzerinden Live Server eklentisiyle açın veya tarayıcınızda doğrudan çalıştırın.
+`index.html` dosyasını VS Code üzerinden **Live Server** eklentisiyle açın veya tarayıcınızda doğrudan çalıştırın.
 
 ---
 
