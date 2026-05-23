@@ -10,7 +10,8 @@ Proje, ilan sitelerindeki karmaşık arama parametrelerini akıllıca çözerek 
 
 - **Canlı Piyasa Taraması (Real-time Scraping):** Kullanıcı arama çubuğuna araç modelini girip Enter'a bastığı an backend sunucusu canlı olarak ilan sayfalarını tarar ve temiz verileri anında ön yüze aktarır.
 - **Akıllı Yenileme (Live Scrape Controls):** Tek tıkla mevcut arama sorgusunu sayfayı yenilemeden günceller ve anlık yüklenme animasyonları ile kullanıcıya görsel geri bildirim sağlar.
-- **Gelişmiş Filtreleme Paneli:** - Maksimum Kilometre süzgeci
+- **Gelişmiş Filtreleme Paneli:**
+  - Maksimum Kilometre süzgeci
   - Minimum ve Maksimum Model Yılı Aralığı filtrelemesi
   - Araç Durumu (Sıfır / İkinci El) seçimi
 - **Dinamik Fiyat & Kilometre Grafiği (Chart.js):** Çekilen verileri kilometreye göre sıralayarak fiyat-kilometre eğrisini canlı olarak çizer. Filtreler değiştikçe grafik saniyeler içinde kendini günceller.
@@ -41,6 +42,21 @@ Proje, ilan sitelerindeki karmaşık arama parametrelerini akıllıca çözerek 
 Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları sırasıyla uygulayabilirsiniz:
 
 ### 1. Projeyi Klonlayın veya İndirin
-```bash
-git clone [https://github.com/HasanIbrahimov/VitesTracker.git](https://github.com/HasanIbrahimov/VitesTracker.git)
+git clone https://github.com/HasanIbrahimov/VitesTracker.git
 cd VitesTracker
+
+### 2. Gerekli Python Kütüphanelerini Kurun
+pip install flask flask-cors requests beautifulsoup4
+
+### 3. Backend Sunucusunu Başlatın
+python server.py
+
+Sunucu başarıyla başladığında terminalde "🚀 VitesTracker Sunucusu (Nihai Sürüm) Çalışıyor! (Port: 5000)" mesajını göreceksiniz.
+
+### 4. Ön Yüzü Yayına Alın
+index.html dosyasını VS Code üzerinden Live Server eklentisiyle açın veya tarayıcınızda doğrudan çalıştırın.
+
+---
+
+## 📄 Lisans
+Bu proje MIT Lisansı altında lisanslanmıştır. Akademik ve kişisel portfolyo kullanımlarına tamamen açıktır.
